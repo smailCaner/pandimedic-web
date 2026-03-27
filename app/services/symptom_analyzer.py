@@ -35,6 +35,7 @@ class AnalysisResult:
         "⚠️ Bu sonuç bir tıbbi tanı değildir. Lütfen bir sağlık kuruluşuna başvurunuz. "
         "Bu uygulama yalnızca bilgilendirme amaçlıdır."
     )
+    question: str | None = None
 
 
 # ─── Temel Sınıf (Abstract) ───────────────────────────────────────────────────
@@ -313,7 +314,50 @@ class MLSymptomAnalyzer(BaseSymptomAnalyzer):
 
         # Cümleleri birleştir (örn: "başım ağrıyor, ateşim var")
         text = " ".join(symptoms).lower()
+        
+        # ─── CONVERSATIONAL (DIYALOG) MANTIĞI (Stateless Expert System) ───
+        # Kullanıcının verdiği cevaplar (Hayır/Yok veya Evet/Semptom) "symptoms" içine eklendiği için "text" içinde yer alır.
+        has_answered = "yok" in text or "hayır" in text or "evet" in text or "var" in text
 
+        if not has_answered:
+            if any(w in text for w in ["karın", "karn", "mide"]) and any(w in text for w in ["ağrı", "ağr"]):
+                if not any(w in text for w in ["ishal", "bulantı", "kusma"]):
+                    return AnalysisResult(
+                        input_symptoms=symptoms, recommendations=[],
+                        question="Karın/Mide ağrınıza ek olarak 'İshal' veya 'Bulantı' şikayetiniz var mı? 🦠"
+                    )
+            elif any(w in text for w in ["baş", "şakak"]) and "ağrı" in text:
+                if not any(w in text for w in ["bulantı", "görm", "bulanık", "ışık"]):
+                    return AnalysisResult(
+                        input_symptoms=symptoms, recommendations=[],
+                        question="Baş ağrınıza 'Mide Bulantısı', 'Işığa Hassasiyet' veya 'Bulanık Görme' eşlik ediyor mu? 🧠"
+                    )
+            elif any(w in text for w in ["göğüs", "göğs", "kalp"]) and any(w in text for w in ["ağrı", "sıkış", "çarpıntı"]):
+                if not any(w in text for w in ["nefes", "kol", "uyuşma"]):
+                    return AnalysisResult(
+                        input_symptoms=symptoms, recommendations=[],
+                        question="Göğsünüzdeki rahatsızlığa 'Nefes Darlığı' veya 'Sol Kola Vuran Ağrı' eşlik ediyor mu? ❤️"
+                    )
+            elif "boğaz" in text or "yutk" in text:
+                if not any(w in text for w in ["öksürük", "öksür", "ateş", "balgam"]):
+                    return AnalysisResult(
+                        input_symptoms=symptoms, recommendations=[],
+                        question="Boğaz ağrınıza veya yutkunma zorluğuna 'Öksürük' veya 'Ateş' eşlik ediyor mu? 🧣"
+                    )
+            elif "göz" in text:
+                if not any(w in text for w in ["bulanık", "çapak", "batma", "sul", "kızar"]):
+                    return AnalysisResult(
+                        input_symptoms=symptoms, recommendations=[],
+                        question="Gözünüzdeki bu duruma 'Bulanık Görme', 'Batma' veya 'Aşırı Sulanma' hissi eşlik ediyor mu? 👁️"
+                    )
+            elif "öksür" in text:
+                if not any(w in text for w in ["ateş", "balgam", "kan", "göğüs", "göğs"]):
+                    return AnalysisResult(
+                        input_symptoms=symptoms, recommendations=[],
+                        question="Öksürüğünüze 'Ateş', 'Hırıltı' veya 'Kana Benzer Balgam' eşlik ediyor mu? 🫁"
+                    )
+
+        # ─── MAKİNE ÖĞRENMESİ (ML) TAHMİNİ ───
         try:
             # Tahmin oranlarını al
             probs = self.model.predict_proba([text])[0]
@@ -331,7 +375,7 @@ class MLSymptomAnalyzer(BaseSymptomAnalyzer):
                 
                 # Özel acil durum kelimesi kontrolü
                 warning = None
-                if any(w in text for w in ["nefes alamıyorum", "göğsümde öküz", "kalbime bıçak", "kan boşaldı"]):
+                if any(w in text for w in ["nefes alamıyorum", "göğsümde öküz", "kalbime bıçak", "kan boşaldı", "sol koluma"]):
                     warning = "🚨 Belirtileriniz acil bir duruma işaret ediyor olabilir. Lütfen en yakın acil servise başvurun."
                     confidence = "yüksek"
 

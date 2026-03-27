@@ -61,6 +61,7 @@ def analyze_symptoms(
             for r in result.recommendations
         ],
         disclaimer=result.disclaimer,
+        question=result.question,
     )
 
 

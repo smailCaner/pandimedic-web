@@ -1,4 +1,4 @@
-﻿"""Pydantic schemas for symptom analysis."""
+"""Pydantic schemas for symptom analysis."""
 
 from datetime import datetime
 from pydantic import BaseModel
@@ -23,7 +23,8 @@ class PolyclinicRecommendation(BaseModel):
 class SymptomAnalyzeResponse(BaseModel):
     input_symptoms: list[str]
     recommendations: list[PolyclinicRecommendation]
-    disclaimer: str  # "Bu bir tÄ±bbi tanÄ± deÄŸildir" uyarÄ±sÄ±
+    disclaimer: str  # "Bu bir tıbbi tanı değildir" uyarısı
+    question: str | None = None  # Yapay zekanın soracağı soru (Varsa sonuç gösterilmez, soru sorulur)
 
 
 # â”€â”€ History â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
