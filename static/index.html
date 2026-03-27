@@ -410,7 +410,11 @@
 
     <script>
         const API = '';
-        let authToken = localStorage.getItem('pandimedic_token') || null;
+        let authToken = localStorage.getItem('pandimedic_token');
+        if (authToken === 'undefined' || authToken === 'null' || !authToken) {
+            authToken = null;
+            localStorage.removeItem('pandimedic_token');
+        }
         let quizData = null;
         let currentQuizIdx = 0;
         let userAnswers = [];
