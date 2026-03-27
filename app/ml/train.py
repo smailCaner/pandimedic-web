@@ -1,28 +1,23 @@
 import pandas as pd
 from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.naive_bayes import MultinomialNB
+from sklearn.linear_model import LogisticRegression
 from sklearn.pipeline import Pipeline
 import joblib
 import os
 
-print("Makine öğrenmesi modeli eğitiliyor...")
+print("Makine öğrenmesi modeli eğitiliyor (Gelişmiş Türkçe Sürüm)...")
 
-# Load dataset
 df = pd.read_csv('symptoms_data.csv', sep=';', encoding='utf-8')
-
-# Basic clean up
 X = df['Şikayet_Cumlesi'].str.lower()
 y = df['Poliklinik']
 
-# Pipeline: TF-IDF for text vectorization -> Naive Bayes for classification
+# char_wb n-gram'lar Türkçe gibi eklemeli dillerde kelime köklerini yakalamak için harikadır
 model = Pipeline([
-    ('tfidf', TfidfVectorizer(max_features=1000, ngram_range=(1, 2))),
-    ('clf', MultinomialNB())
+    ('tfidf', TfidfVectorizer(analyzer='char_wb', ngram_range=(3, 6))),
+    ('clf', LogisticRegression(C=5.0, class_weight='balanced', max_iter=200))
 ])
 
-# Train model
 model.fit(X, y)
 
-# Save model
 joblib.dump(model, 'symptom_model.pkl')
-print(f"Eğitim tamamlandı! Model 'symptom_model.pkl' {os.path.abspath('symptom_model.pkl')} konumuna kaydedildi.")
+print(f"Eğitim tamamlandı! Yeni model kaydedildi.")
