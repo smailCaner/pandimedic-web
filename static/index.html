@@ -1,0 +1,627 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pandimedic | Akıllı Sağlık Platformu</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;800&display=swap');
+        
+        body { font-family: 'Inter', 'Segoe UI', sans-serif; background-color: #f0f4f8; margin: 0; min-height: 100vh; overflow-x: hidden; position: relative; }
+        
+        /* --- YENİLENEN DİNAMİK ARKA PLAN --- */
+        .hero-bg {
+            position: fixed;
+            top: 0; right: 0;
+            z-index: -10;
+            background: #ffffff;
+            width: 100%; height: 100%;
+            transition: all 0.8s ease;
+        }
+
+        /* Dekoratif Mesh Katmanları */
+        .bg-blob {
+            position: absolute;
+            width: 600px; height: 600px;
+            filter: blur(80px);
+            border-radius: 50%;
+            z-index: -9;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        .blob-1 { background: #3b82f6; top: -10%; right: -5%; animation: float-slow 20s infinite alternate; }
+        .blob-2 { background: #10b981; bottom: -10%; left: 20%; animation: float-slow 15s infinite alternate-reverse; }
+        .blob-3 { background: #8b5cf6; top: 30%; right: 20%; width: 300px; height: 300px; opacity: 0.2; }
+
+        @keyframes float-slow {
+            from { transform: translate(0, 0) scale(1); }
+            to { transform: translate(40px, 60px) scale(1.1); }
+        }
+
+        /* Yan Panel Gradiyenti (Masaüstü) */
+        @media (min-width: 1024px) {
+            .side-decoration {
+                position: fixed; top: 0; right: 0; width: 35%; height: 100vh;
+                background: linear-gradient(145deg, rgba(59, 130, 246, 0.8) 0%, rgba(16, 185, 129, 0.8) 100%);
+                backdrop-filter: blur(20px);
+                clip-path: polygon(20% 0%, 100% 0%, 100% 100%, 0% 100%);
+                z-index: -5;
+            }
+        }
+
+        @media (max-width: 1023px) {
+            .side-decoration {
+                position: absolute; top: 0; left: 0; width: 100%; height: 350px;
+                background: linear-gradient(145deg, #3b82f6 0%, #10b981 100%);
+                clip-path: ellipse(120% 100% at 50% 0%);
+                z-index: -5;
+            }
+        }
+
+        /* --- SÜSLEMELER VE KARTLAR --- */
+        .card-style { 
+            background: rgba(255, 255, 255, 0.7); 
+            backdrop-filter: blur(16px); 
+            border: 1px solid rgba(255, 255, 255, 0.5); 
+            box-shadow: 0 8px 32px rgba(31, 38, 135, 0.07);
+            transition: all 0.3s ease; 
+        }
+        
+        .nav-card {
+            background: rgba(255, 255, 255, 0.9);
+            border-radius: 2.5rem;
+            padding: 2.5rem;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.03);
+            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            cursor: pointer;
+            border: 1px solid transparent;
+        }
+        .nav-card:hover { transform: translateY(-10px); border-color: rgba(59, 130, 246, 0.3); box-shadow: 0 20px 40px rgba(0,0,0,0.08); }
+
+        .listening { animation: pulse-red 1.5s infinite; border: 4px solid #ef4444 !important; }
+        @keyframes pulse-red {
+            0% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0.5); }
+            70% { box-shadow: 0 0 0 15px rgba(239, 68, 68, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(239, 68, 68, 0); }
+        }
+
+        .pandi-anim { animation: float-pandi 3s ease-in-out infinite; cursor: pointer; }
+        @keyframes float-pandi { 0%, 100% { transform: translateY(0) rotate(-2deg); } 50% { transform: translateY(-10px) rotate(2deg); } }
+
+        .page-section { display: none; animation: fadeIn 0.5s ease; }
+        .page-section.active { display: block; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        .form-input { width: 100%; padding: 1rem 1.5rem; border-radius: 1.2rem; background: rgba(241, 245, 249, 0.8); border: 2px solid transparent; transition: all 0.3s; font-weight: 600; }
+        .form-input:focus { outline: none; border-color: #3b82f6; background: white; box-shadow: 0 0 0 4px rgba(59, 130, 246, 0.1); }
+
+        /* --- YÜRÜYEN PANDALARIN STİLİ --- */
+/* --- YÜRÜYEN PANDALARIN STİLİ --- */
+.walking-pandi {
+    position: fixed;
+    z-index: -8; /* Kartların arkasında kalması için */
+    pointer-events: none; /* Dokunulmazlık özelliği: Tıklanamaz ve engellemez */
+    opacity: 0.12; /* Gözü yormaması için şeffaflık ayarı */
+    animation: walk-pandi linear infinite;
+}
+
+/* Yürüme Animasyonu: Ekranın solundan girip sağından çıkar */
+@keyframes walk-pandi {
+    0% { left: -150px; transform: scaleX(1) rotate(0deg); }
+    50% { transform: scaleX(1) rotate(5deg); }
+    100% { left: calc(100vw + 150px); transform: scaleX(1) rotate(0deg); }
+}
+
+        /* --- MODAL MESAJ KUTUSU --- */
+        .modal-overlay {
+            position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+            background: rgba(0,0,0,0.4); backdrop-filter: blur(8px);
+            z-index: 9999; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .modal-overlay.active { opacity: 1; pointer-events: auto; }
+        .modal-box {
+            background: rgba(255,255,255,0.95); backdrop-filter: blur(20px);
+            border: 1px solid rgba(255,255,255,0.6); border-radius: 2.5rem;
+            padding: 2.5rem; max-width: 480px; width: 90%; max-height: 80vh; overflow-y: auto;
+            box-shadow: 0 25px 60px rgba(0,0,0,0.15);
+            transform: translateY(30px) scale(0.95); transition: transform 0.4s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+        .modal-overlay.active .modal-box { transform: translateY(0) scale(1); }
+        .modal-icon { width: 64px; height: 64px; border-radius: 1.2rem; display: flex; align-items: center; justify-content: center; font-size: 1.8rem; margin: 0 auto 1.2rem; }
+        .modal-icon.success { background: #ecfdf5; color: #10b981; }
+        .modal-icon.error { background: #fef2f2; color: #ef4444; }
+        .modal-icon.info { background: #eff6ff; color: #3b82f6; }
+        .modal-icon.warning { background: #fffbeb; color: #f59e0b; }
+        .modal-icon.medical { background: linear-gradient(135deg, #eff6ff, #ecfdf5); color: #3b82f6; }
+        .modal-icon.profile { background: linear-gradient(135deg, #eff6ff, #f0f4ff); color: #6366f1; }
+        .modal-title { font-size: 1.4rem; font-weight: 900; text-transform: uppercase; color: #1e293b; text-align: center; margin-bottom: 0.8rem; }
+        .modal-body { color: #475569; font-weight: 600; text-align: center; line-height: 1.7; font-size: 0.95rem; }
+        .modal-body .rec-card { background: #f8fafc; border-radius: 1rem; padding: 1rem; margin: 0.6rem 0; text-align: left; border-left: 4px solid #3b82f6; }
+        .modal-body .rec-card.warning-card { border-left-color: #f59e0b; }
+        .modal-body .rec-dept { font-weight: 900; color: #1e293b; font-size: 1rem; }
+        .modal-body .rec-conf { font-size: 0.75rem; font-weight: 800; text-transform: uppercase; padding: 2px 8px; border-radius: 6px; display: inline-block; margin-left: 6px; }
+        .modal-body .rec-conf.high { background: #dcfce7; color: #16a34a; }
+        .modal-body .rec-conf.mid { background: #fef3c7; color: #d97706; }
+        .modal-body .rec-conf.low { background: #fee2e2; color: #dc2626; }
+        .modal-body .profile-stat { display: flex; align-items: center; gap: 0.8rem; padding: 0.7rem 0; border-bottom: 1px solid #f1f5f9; }
+        .modal-body .profile-stat:last-child { border-bottom: none; }
+        .modal-body .profile-stat i { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 10px; font-size: 1rem; }
+        .modal-close-btn { display: block; width: 100%; margin-top: 1.5rem; padding: 1rem; border: none; border-radius: 1.2rem; font-weight: 900; font-size: 1rem; text-transform: uppercase; cursor: pointer; transition: all 0.3s; }
+        .modal-close-btn.primary { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; box-shadow: 0 4px 15px rgba(59,130,246,0.3); }
+        .modal-close-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,130,246,0.4); }
+        .modal-disclaimer { margin-top: 0.8rem; padding: 0.8rem; background: #fefce8; border-radius: 0.8rem; font-size: 0.8rem; color: #92400e; text-align: left; font-weight: 700; }
+    </style>
+</head>
+<body>
+<img src="https://png.pngtree.com/png-vector/20240528/ourlarge/pngtree-cute-panda-logo-design-vector-png-image_12532129.png" class="walking-pandi" style="top: 5%; width: 50px; animation-duration: 20s; animation-delay: 0s;">
+<img src="https://png.pngtree.com/png-vector/20240528/ourlarge/pngtree-cute-panda-logo-design-vector-png-image_12532129.png" class="walking-pandi" style="top: 15%; width: 80px; animation-duration: 35s; animation-delay: -5s;">
+<img src="https://png.pngtree.com/png-vector/20240528/ourlarge/pngtree-cute-panda-logo-design-vector-png-image_12532129.png" class="walking-pandi" style="top: 25%; width: 60px; animation-duration: 25s; animation-delay: -12s;">
+<img src="https://png.pngtree.com/png-vector/20240528/ourlarge/pngtree-cute-panda-logo-design-vector-png-image_12532129.png" class="walking-pandi" style="top: 35%; width: 100px; animation-duration: 45s; animation-delay: -2s;">
+<img src="https://png.pngtree.com/png-vector/20240528/ourlarge/pngtree-cute-panda-logo-design-vector-png-image_12532129.png" class="walking-pandi" style="top: 45%; width: 70px; animation-duration: 30s; animation-delay: -20s;">
+<img src="https://png.pngtree.com/png-vector/20240528/ourlarge/pngtree-cute-panda-logo-design-vector-png-image_12532129.png" class="walking-pandi" style="top: 55%; width: 90px; animation-duration: 40s; animation-delay: -15s;">
+<img src="https://png.pngtree.com/png-vector/20240528/ourlarge/pngtree-cute-panda-logo-design-vector-png-image_12532129.png" class="walking-pandi" style="top: 65%; width: 55px; animation-duration: 28s; animation-delay: -8s;">
+<img src="https://png.pngtree.com/png-vector/20240528/ourlarge/pngtree-cute-panda-logo-design-vector-png-image_12532129.png" class="walking-pandi" style="top: 75%; width: 110px; animation-duration: 50s; animation-delay: -30s;">
+<img src="https://png.pngtree.com/png-vector/20240528/ourlarge/pngtree-cute-panda-logo-design-vector-png-image_12532129.png" class="walking-pandi" style="top: 85%; width: 65px; animation-duration: 22s; animation-delay: -10s;">
+<img src="https://png.pngtree.com/png-vector/20240528/ourlarge/pngtree-cute-panda-logo-design-vector-png-image_12532129.png" class="walking-pandi" style="top: 92%; width: 85px; animation-duration: 38s; animation-delay: -3s;">
+
+    <div class="hero-bg"></div>
+    <div class="bg-blob blob-1"></div>
+    <div class="bg-blob blob-2"></div>
+    <div class="bg-blob blob-3"></div>
+    <div class="side-decoration"></div>
+
+    <nav class="container mx-auto px-6 py-6 flex justify-between items-center relative z-50">
+        <div class="text-3xl font-black tracking-tighter cursor-pointer" onclick="showPage('home-page')">
+            <span class="lg:text-blue-800 text-white">Pandi</span><span class="text-emerald-500">medic</span>
+        </div>
+        <div class="flex items-center gap-4">
+            <button onclick="showPage('login-page')" class="bg-white/20 hover:bg-white/30 text-white lg:text-blue-700 lg:bg-white lg:shadow-xl px-7 py-2.5 rounded-full font-bold transition-all text-sm uppercase tracking-wide border border-white/50">Giriş Yap</button>
+            <button id="menu-toggle" class="text-3xl text-white lg:text-slate-800 p-2 focus:outline-none hover:scale-110 transition">
+                <i class="fas fa-bars"></i>
+            </button>
+        </div>
+    </nav>
+
+    <div id="side-menu" class="fixed top-0 right-0 w-full sm:w-96 h-full bg-white/95 backdrop-blur-xl z-[100] translate-x-full shadow-2xl p-8 flex flex-col text-left">
+        <div class="flex justify-between items-center mb-12">
+            <div class="text-2xl font-black text-blue-600 italic">Pandi Menü</div>
+            <button id="menu-close" class="text-4xl text-slate-400 hover:text-red-500 transition">&times;</button>
+        </div>
+        <div class="flex flex-col gap-6">
+            <a href="javascript:void(0)" onclick="showPage('home-page')" class="text-2xl font-bold text-slate-800 hover:text-blue-600 flex items-center gap-4 transition">
+                <i class="fas fa-house text-slate-400 w-8"></i> Ana Sayfa
+            </a>
+            <a href="javascript:void(0)" onclick="showPage('ilkyardim-page')" class="text-2xl font-bold text-slate-800 hover:text-blue-600 flex items-center gap-4 transition">
+                <i class="fas fa-kit-medical text-red-500 w-8"></i> İlk Yardım
+            </a>
+            <a href="javascript:void(0)" onclick="showPage('ansiklopedi-page')" class="text-2xl font-bold text-slate-800 hover:text-blue-600 flex items-center gap-4 transition">
+                <i class="fas fa-book-medical text-blue-600 w-8"></i> Ansiklopedi
+            </a>
+            <a href="javascript:void(0)" onclick="showPage('saglik-page')" class="text-2xl font-bold text-slate-800 hover:text-blue-600 flex items-center gap-4 transition">
+                <i class="fas fa-heart-pulse text-emerald-600 w-8"></i> Sağlıklı Yaşam
+            </a>
+        </div>
+    </div>
+
+    <main id="home-page" class="page-section active container mx-auto px-6 pt-10 lg:pt-16 relative z-10">
+        <div class="flex flex-col lg:flex-row items-start gap-10 mb-20">
+            <div class="lg:w-2/3 w-full text-center lg:text-left">
+                <h1 class="text-4xl lg:text-7xl font-black text-slate-900 leading-tight mb-4 uppercase tracking-tighter">Sağlığın İçin <br><span class="text-blue-600">Doğru</span> Adım.</h1>
+                <p class="text-xl text-slate-500 mb-12 italic text-left opacity-80">Şikayetiniz nedir? Pandi sizi doğru polikliniğe yönlendirelim.</p>
+
+                <div class="relative w-full max-w-2xl mx-auto lg:mx-0">
+                    <div id="mascot-trigger" class="absolute -top-16 -left-4 lg:-top-20 lg:-left-12 w-24 h-24 lg:w-32 lg:h-32 z-20 pandi-anim" onclick="startVoiceAssistant()">
+                        <div class="bg-white rounded-full p-1 shadow-2xl border-4 border-blue-50 flex items-center justify-center h-full w-full overflow-hidden transition-all hover:border-emerald-200">
+                            <img src="https://img.freepik.com/premium-vektor/panda-yakin-cekim-panda-logosu-panda-silueti_677805-1172.jpg" alt="Pandi" class="w-4/5 h-4/5 object-contain">
+                            
+                        </div>
+                    </div>
+                    <div class="bg-white/80 backdrop-blur-md p-2 rounded-[2.5rem] shadow-2xl border border-white">
+                        <textarea id="complaint-input" class="w-full h-40 p-8 rounded-[2rem] bg-slate-50/50 text-slate-800 font-bold italic border-none focus:outline-none resize-none" placeholder="Şikayetinizi buraya yazın..."></textarea>
+                    </div>
+                    <div class="flex flex-col sm:flex-row gap-4 mt-6">
+                        <button onclick="simulateAnalysis()" class="flex-[2] bg-emerald-500 text-white py-5 rounded-2xl font-black text-xl shadow-lg hover:bg-emerald-600 hover:shadow-emerald-200 transition-all uppercase italic">Analiz Et</button>
+                        <button onclick="startVoiceAssistant()" class="flex-1 bg-white border-2 border-slate-100 text-slate-700 py-5 rounded-2xl font-black text-xl hover:text-[#FF9966] hover:border-[#FF9966] transition-all uppercase italic flex items-center justify-center gap-2 shadow-sm">
+                            <i class="fas fa-microphone text-[#FF9966]"></i> SESLİ
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <div class="lg:w-1/3 w-full flex flex-col gap-6">
+                <div id="quiz-card" class="card-style p-8 rounded-[2.5rem] shadow-xl border-b-8 border-[#FF9966] text-left">
+                    <div class="flex items-center gap-3 mb-4 text-[#FF9966]">
+                        <i class="fas fa-bolt text-xl"></i>
+                        <h3 class="text-lg font-black uppercase italic">Günlük Quiz</h3>
+                    </div>
+                    <div id="quiz-content">
+                        <p id="quiz-question" class="text-md font-bold text-slate-700 mb-4 italic">Yükleniyor...</p>
+                        <div id="quiz-options" class="space-y-2"></div>
+                        <p id="quiz-message" class="mt-4 text-sm font-black uppercase italic hidden"></p>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+            <div class="nav-card border-b-8 border-red-500" onclick="showPage('ilkyardim-page')">
+                <div class="w-14 h-14 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-inner"><i class="fas fa-kit-medical"></i></div>
+                <h3 class="text-2xl font-black text-slate-800 uppercase mb-2">İlk Yardım</h3>
+                <p class="text-slate-500 font-medium leading-relaxed">Acil durumlarda hayat kurtarıcı müdahaleler rehberi.</p>
+            </div>
+            <div class="nav-card border-b-8 border-blue-500" onclick="showPage('ansiklopedi-page')">
+                <div class="w-14 h-14 bg-blue-50 text-blue-600 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-inner"><i class="fas fa-book-medical"></i></div>
+                <h3 class="text-2xl font-black text-slate-800 uppercase mb-2">Ansiklopedi</h3>
+                <p class="text-slate-500 font-medium leading-relaxed">Belirtiler ve tedavi yöntemleri bilgi bankası.</p>
+            </div>
+            <div class="nav-card border-b-8 border-emerald-500" onclick="showPage('saglik-page')">
+                <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-inner"><i class="fas fa-heart-pulse"></i></div>
+                <h3 class="text-2xl font-black text-slate-800 uppercase mb-2">Sağlıklı Yaşam</h3>
+                <p class="text-slate-500 font-medium leading-relaxed">Dengeli beslenme ve aktif yaşam tavsiyeleri.</p>
+            </div>
+        </div>
+    </main>
+
+    <section id="login-page" class="page-section container mx-auto px-6 py-10 relative z-10">
+        <button onclick="showPage('home-page')" class="max-w-md mx-auto mb-6 text-white lg:text-blue-700 font-bold flex items-center gap-2 hover:gap-4 transition-all drop-shadow-md bg-white/10 lg:bg-transparent p-3 rounded-xl lg:p-0">
+            <i class="fas fa-arrow-left"></i> ANA SAYFAYA DÖN
+        </button>
+        <div class="max-w-md mx-auto card-style p-10 rounded-[3rem] shadow-2xl text-left border border-white">
+            <h2 class="text-3xl font-black text-slate-900 mb-2 uppercase">Tekrar <span class="text-blue-600">Hoş Geldin!</span></h2>
+            <p class="text-slate-500 font-bold italic mb-8">PandiMedic hesabınla giriş yap.</p>
+            
+            <div class="space-y-4">
+                <input type="email" class="form-input shadow-sm" placeholder="E-Posta Adresi">
+                <input type="password" class="form-input shadow-sm" placeholder="Şifre">
+                <button onclick="handleLogin()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-black text-lg shadow-lg hover:bg-blue-700 transition-all uppercase italic mt-4 shadow-blue-100">Giriş Yap</button>
+            </div>
+            
+            <div class="mt-8 text-center bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                <p class="text-slate-500 font-bold italic">Hesabın yok mu?</p>
+                <button onclick="showPage('register-page')" class="text-emerald-500 font-black uppercase italic hover:underline">Şimdi Kayıt Ol</button>
+            </div>
+        </div>
+    </section>
+
+    <section id="register-page" class="page-section container mx-auto px-6 py-10 relative z-10">
+        <button onclick="showPage('home-page')" class="max-w-lg mx-auto mb-6 text-white lg:text-blue-700 font-bold flex items-center gap-2 hover:gap-4 transition-all drop-shadow-md bg-white/10 lg:bg-transparent p-3 rounded-xl lg:p-0">
+            <i class="fas fa-arrow-left"></i> ANA SAYFAYA DÖN
+        </button>
+        <div class="max-w-lg mx-auto card-style p-10 rounded-[3rem] shadow-2xl text-left border border-white">
+            <h2 class="text-3xl font-black text-slate-900 mb-2 uppercase">Yeni <span class="text-emerald-500">Hesap</span></h2>
+            <div class="grid grid-cols-1 gap-4 mt-6">
+                <input type="text" maxlength="11" class="form-input shadow-sm" placeholder="T.C. Kimlik No">
+                <input type="email" class="form-input shadow-sm" placeholder="E-Posta Adresi">
+                <div class="flex gap-4">
+                    <input type="password" class="form-input shadow-sm" placeholder="Şifre">
+                    <input type="password" class="form-input shadow-sm" placeholder="Şifre Tekrar">
+                </div>
+                <div class="mt-2 bg-slate-50/50 p-4 rounded-2xl border border-slate-100">
+                    <label class="block text-xs font-black uppercase text-slate-400 mb-2 ml-4 tracking-widest">Doğum Tarihi</label>
+                    <div class="flex gap-2">
+                        <input type="number" placeholder="Gün" class="form-input text-center">
+                        <input type="number" placeholder="Ay" class="form-input text-center">
+                        <input type="number" placeholder="Yıl" class="form-input text-center">
+                    </div>
+                </div>
+                <button onclick="handleRegister()" class="w-full bg-emerald-500 text-white py-4 rounded-2xl font-black text-lg shadow-lg hover:bg-emerald-600 transition-all uppercase italic mt-4 shadow-emerald-100">Kayıt Ol</button>
+            </div>
+            <button onclick="showPage('login-page')" class="w-full mt-6 text-slate-400 font-bold text-sm hover:text-blue-500 underline underline-offset-4">Zaten hesabın var mı? Giriş yap.</button>
+        </div>
+    </section>
+
+   <section id="ilkyardim-page" class="page-section container mx-auto px-6 py-10 relative z-10 text-left">
+    <button onclick="showPage('home-page')" class="mb-8 text-blue-600 font-bold flex items-center gap-2 hover:gap-4 transition-all">
+        <i class="fas fa-arrow-left"></i> ANA SAYFAYA DÖN
+    </button>
+    <h2 class="text-4xl font-black text-slate-900 mb-10 uppercase italic">İlk Yardım <span class="text-red-500">Rehberi</span></h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
+        <div class="card-style p-8 rounded-3xl border-l-8 border-red-500">
+            <h3 class="text-2xl font-black text-red-600 mb-4 uppercase">Heimlich Manevrası</h3>
+            <p class="text-slate-600 font-medium leading-relaxed">Boğulma durumunda uygulanan hayat kurtarıcı teknik. Kişinin arkasına geçerek mide bölgesine (göbek deliğinin biraz üstüne) yumruk yaparak yukarı ve içeri doğru sertçe baskı uygulanır.</p>
+        </div>
+
+        <div class="card-style p-8 rounded-3xl border-l-8 border-red-400">
+            <h3 class="text-2xl font-black text-red-600 mb-4 uppercase">Burun Kanaması</h3>
+            <p class="text-slate-600 font-medium leading-relaxed">Kişiyi hafifçe öne eğin (asla geriye yaslamayın). Burun kanatlarını parmaklarınızla 5-10 dakika boyunca sıkın. Enseye soğuk uygulama yapılabilir.</p>
+        </div>
+        
+
+        <div class="card-style p-8 rounded-3xl border-l-8 border-red-600">
+            <h3 class="text-2xl font-black text-red-600 mb-4 uppercase">Kesikler ve Kanama</h3>
+            <p class="text-slate-600 font-medium leading-relaxed">Yaranın üzerine temiz bir bezle doğrudan baskı uygulayın. Kanama durmuyorsa bezi kaldırmadan üzerine ikinci bir bez koyun. Yaralı bölgeyi mümkünse kalp seviyesinden yukarıda tutun.</p>
+        </div>
+        
+
+        <div class="card-style p-8 rounded-3xl border-l-8 border-red-400">
+            <h3 class="text-2xl font-black text-red-600 mb-4 uppercase">Yanık Müdahalesi</h3>
+            <p class="text-slate-600 font-medium leading-relaxed">Yanık bölgesini en az 15-20 dakika akar soğuk su altında tutun. Su toplayan yerleri patlatmayın ve üzerine diş macunu, yoğurt gibi maddeler asla sürmeyin.</p>
+        </div>
+
+        <div class="card-style p-8 rounded-3xl border-l-8 border-red-700 md:col-span-2">
+            <h3 class="text-2xl font-black text-red-600 mb-4 uppercase">Kalp Masajı (CPR)</h3>
+            <p class="text-slate-600 font-medium leading-relaxed">Yetişkinlerde dakikada ortalama 100-120 tempo ile göğüs kafesi merkezine 5-6 cm derinliğinde baskı uygulanır. Bu işlem tıbbi yardım gelene kadar kesintisiz sürdürülmelidir.</p>
+        </div>
+    </div>
+</section>
+    <section id="ansiklopedi-page" class="page-section container mx-auto px-6 py-10 relative z-10 text-left">
+    <button onclick="showPage('home-page')" class="mb-8 text-blue-600 font-bold flex items-center gap-2 hover:gap-4 transition-all">
+        <i class="fas fa-arrow-left"></i> ANA SAYFAYA DÖN
+    </button>
+    <h2 class="text-4xl font-black text-slate-900 mb-10 uppercase italic">Pandi <span class="text-blue-600">Ansiklopedi</span></h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div class="card-style p-8 rounded-3xl border-l-8 border-blue-500">
+            <h3 class="text-2xl font-black text-slate-800 mb-2 uppercase">Migren Atakları</h3>
+            <p class="text-slate-600 font-medium">Genellikle tek taraflı, zonklayıcı baş ağrısıdır. Işık ve ses hassasiyeti eşlik eder. Atak sırasında karanlık ve sessiz ortamda dinlenmek en etkili yöntemdir.</p>
+        </div>
+        <div class="card-style p-8 rounded-3xl border-l-8 border-emerald-500">
+            <h3 class="text-2xl font-black text-slate-800 mb-2 uppercase">Hipertansiyon</h3>
+            <p class="text-slate-600 font-medium">Kan basıncının kronik olarak yüksek olmasıdır. Sinsi bir hastalık olduğu için düzenli ölçüm ve tuz kısıtlaması hayati önem taşır.</p>
+        </div>
+        <div class="card-style p-8 rounded-3xl border-l-8 border-orange-500">
+            <h3 class="text-2xl font-black text-slate-800 mb-2 uppercase">Tip 2 Diyabet</h3>
+            <p class="text-slate-600 font-medium">Vücudun insülini etkili kullanamaması sonucu oluşur. Dengeli beslenme, kilo kontrolü ve fiziksel aktivite ile yönetilebilir.</p>
+        </div>
+        <div class="card-style p-8 rounded-3xl border-l-8 border-red-500">
+            <h3 class="text-2xl font-black text-slate-800 mb-2 uppercase">Gastrit</h3>
+            <p class="text-slate-600 font-medium">Mide iç zarının iltihaplanmasıdır. Yanma, şişkinlik ve mide bulantısı yapar. Asitli, baharatlı gıdalardan kaçınmak ve az öğünlerle beslenmek önerilir.</p>
+        </div>
+    </div>
+</section>
+<section id="saglik-page" class="page-section container mx-auto px-6 py-10 relative z-10 text-left">
+    <button onclick="showPage('home-page')" class="mb-8 text-blue-600 font-bold flex items-center gap-2 hover:gap-4 transition-all">
+        <i class="fas fa-arrow-left"></i> ANA SAYFAYA DÖN
+    </button>
+    <h2 class="text-4xl font-black text-slate-900 mb-10 uppercase italic">Sağlıklı <span class="text-emerald-500">Yaşam</span></h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+        <div class="card-style p-10 rounded-[3rem] text-center border-t-8 border-blue-400">
+            <i class="fas fa-droplet text-blue-400 text-5xl mb-6"></i>
+            <h3 class="text-2xl font-black mb-4 uppercase">Su Dengesi</h3>
+            <p class="text-slate-600 font-bold italic">Günde ortalama 2.5 litre su içmek, hücrelerin yenilenmesini sağlar ve beyin fonksiyonlarını %14 oranında hızlandırır.</p>
+        </div>
+        <div class="card-style p-10 rounded-[3rem] text-center border-t-8 border-indigo-400">
+            <i class="fas fa-moon text-indigo-400 text-5xl mb-6"></i>
+            <h3 class="text-2xl font-black mb-4 uppercase">Düzenli Uyku</h3>
+            <p class="text-slate-600 font-bold italic">Her gün 7-8 saat kaliteli uyku, bağışıklık sistemini güçlendirir ve hafızayı tazeleyerek stres seviyesini düşürür.</p>
+        </div>
+        <div class="card-style p-10 rounded-[3rem] text-center border-t-8 border-emerald-400">
+            <i class="fas fa-person-running text-emerald-400 text-5xl mb-6"></i>
+            <h3 class="text-2xl font-black mb-4 uppercase">Aktif Yaşam</h3>
+            <p class="text-slate-600 font-bold italic">Haftada en az 150 dakika orta tempolu yürüyüş yapmak, kalp sağlığını korur ve mutluluk hormonu salgılanmasını tetikler.</p>
+        </div>
+    </div>
+</section>
+
+    <!-- MODAL -->
+    <div id="pandi-modal" class="modal-overlay" onclick="if(event.target===this)closeModal()">
+        <div class="modal-box">
+            <div id="modal-icon" class="modal-icon success"><i class="fas fa-check"></i></div>
+            <div id="modal-title" class="modal-title"></div>
+            <div id="modal-body" class="modal-body"></div>
+            <button class="modal-close-btn primary" onclick="closeModal()">Kapat</button>
+        </div>
+    </div>
+
+    <script>
+        const API = '';
+        let authToken = localStorage.getItem('pandimedic_token') || null;
+        let quizData = null;
+        let currentQuizIdx = 0;
+        let userAnswers = [];
+
+        // ── Modal Sistemi ──
+        function showModal(title, body, type='info') {
+            const icons = {success:'fa-check',error:'fa-xmark',info:'fa-circle-info',warning:'fa-triangle-exclamation',medical:'fa-stethoscope',profile:'fa-user'};
+            document.getElementById('modal-icon').className = 'modal-icon ' + type;
+            document.getElementById('modal-icon').innerHTML = '<i class="fas ' + (icons[type]||icons.info) + '"></i>';
+            document.getElementById('modal-title').textContent = title;
+            document.getElementById('modal-body').innerHTML = body;
+            document.getElementById('pandi-modal').classList.add('active');
+        }
+        function closeModal() { document.getElementById('pandi-modal').classList.remove('active'); }
+
+        const menu = document.getElementById('side-menu');
+        document.getElementById('menu-toggle').onclick = () => menu.style.transform = 'translateX(0)';
+        document.getElementById('menu-close').onclick = () => menu.style.transform = 'translateX(100%)';
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page-section').forEach(s => s.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            menu.style.transform = 'translateX(100%)';
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            const decoration = document.querySelector('.side-decoration');
+            decoration.style.opacity = pageId !== 'home-page' ? '0.3' : '1';
+        }
+
+        function apiHeaders() {
+            const h = {'Content-Type': 'application/json'};
+            if (authToken) h['Authorization'] = 'Bearer ' + authToken;
+            return h;
+        }
+
+        // ── Auth ──
+        function updateNavForAuth() {
+            const btn = document.querySelector('nav button[onclick]');
+            if (authToken) {
+                btn.textContent = 'Profil';
+                btn.setAttribute('onclick', "showProfile()");
+            } else {
+                btn.textContent = 'Giriş Yap';
+                btn.setAttribute('onclick', "showPage('login-page')");
+            }
+        }
+
+        async function handleLogin() {
+            const inputs = document.querySelectorAll('#login-page input');
+            const email = inputs[0].value;
+            const password = inputs[1].value;
+            if (!email || !password) return showModal('Eksik Bilgi', 'Lütfen tüm alanları doldurun.', 'warning');
+            try {
+                const res = await fetch(API + '/api/auth/login', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email, password})
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Giriş başarısız');
+                authToken = data.access_token;
+                localStorage.setItem('pandimedic_token', authToken);
+                updateNavForAuth();
+                showModal('Hoş Geldin! 🎉', 'Başarıyla giriş yaptın. Pandimedic seni bekliyor!', 'success');
+                showPage('home-page');
+            } catch(e) { showModal('Giriş Hatası', e.message, 'error'); }
+        }
+
+        async function handleRegister() {
+            const inputs = document.querySelectorAll('#register-page input');
+            const email = inputs[1].value;
+            const password = inputs[2].value;
+            const password2 = inputs[3].value;
+            if (password !== password2) return showModal('Şifre Hatası', 'Girdiğin şifreler birbiriyle eşleşmiyor.', 'warning');
+            if (!email || !password) return showModal('Eksik Bilgi', 'E-posta ve şifre alanları gereklidir.', 'warning');
+            try {
+                const res = await fetch(API + '/api/auth/register', {
+                    method: 'POST', headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({email, password, full_name: 'Pandimedic Kullanıcı'})
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Kayıt başarısız');
+                authToken = data.access_token;
+                localStorage.setItem('pandimedic_token', authToken);
+                updateNavForAuth();
+                showModal('Hesap Oluşturuldu! 🎉', 'Pandimedic ailesine hoş geldin!', 'success');
+                showPage('home-page');
+            } catch(e) { showModal('Kayıt Hatası', e.message, 'error'); }
+        }
+
+        function showProfile() {
+            if (!authToken) return showPage('login-page');
+            fetch(API + '/api/auth/me', {headers: apiHeaders()})
+                .then(r => r.json())
+                .then(u => {
+                    const html = `
+                        <div style="text-align:left">
+                            <div class="profile-stat"><i style="background:#eff6ff;color:#3b82f6" class="fas fa-envelope"></i><div><div style="font-size:0.75rem;color:#94a3b8;font-weight:800;text-transform:uppercase">E-Posta</div><div style="font-weight:900;color:#1e293b">${u.email}</div></div></div>
+                            <div class="profile-stat"><i style="background:#fef3c7;color:#f59e0b" class="fas fa-fire"></i><div><div style="font-size:0.75rem;color:#94a3b8;font-weight:800;text-transform:uppercase">Günlük Seri</div><div style="font-weight:900;color:#1e293b">${u.current_streak} gün 🔥</div></div></div>
+                            <div class="profile-stat"><i style="background:#ecfdf5;color:#10b981" class="fas fa-trophy"></i><div><div style="font-size:0.75rem;color:#94a3b8;font-weight:800;text-transform:uppercase">Toplam Skor</div><div style="font-weight:900;color:#1e293b">${u.total_score} puan</div></div></div>
+                            <div class="profile-stat"><i style="background:#fef2f2;color:#ef4444" class="fas fa-medal"></i><div><div style="font-size:0.75rem;color:#94a3b8;font-weight:800;text-transform:uppercase">En Uzun Seri</div><div style="font-weight:900;color:#1e293b">${u.longest_streak} gün</div></div></div>
+                        </div>
+                        <button onclick="logout();closeModal()" style="width:100%;margin-top:1rem;padding:0.8rem;background:#fef2f2;color:#ef4444;border:none;border-radius:1rem;font-weight:900;cursor:pointer;text-transform:uppercase">Çıkış Yap</button>`;
+                    showModal(u.full_name, html, 'profile');
+                })
+                .catch(() => { authToken = null; localStorage.removeItem('pandimedic_token'); updateNavForAuth(); showPage('login-page'); });
+        }
+
+        function logout() { authToken = null; localStorage.removeItem('pandimedic_token'); updateNavForAuth(); showPage('home-page'); }
+
+        // ── Quiz (API) ──
+        async function loadDailyQuiz() {
+            const qEl = document.getElementById('quiz-question');
+            const oEl = document.getElementById('quiz-options');
+            try {
+                const res = await fetch(API + '/api/quiz/daily');
+                if (!res.ok) { qEl.innerText = 'Bugün için quiz bulunamadı.'; oEl.innerHTML=''; return; }
+                quizData = await res.json();
+                currentQuizIdx = 0;
+                userAnswers = [];
+                showQuizQuestion();
+            } catch(e) { qEl.innerText = 'Quiz yüklenirken hata oluştu.'; oEl.innerHTML=''; }
+        }
+
+        function showQuizQuestion() {
+            const qEl = document.getElementById('quiz-question');
+            const oEl = document.getElementById('quiz-options');
+            const msgEl = document.getElementById('quiz-message');
+            msgEl.classList.add('hidden');
+            if (!quizData || currentQuizIdx >= quizData.questions.length) {
+                submitQuizToAPI();
+                return;
+            }
+            const q = quizData.questions[currentQuizIdx];
+            qEl.innerText = `Soru ${currentQuizIdx+1}/${quizData.questions.length}: "${q.question_text}"`;
+            oEl.innerHTML = '';
+            q.options.forEach(opt => {
+                const b = document.createElement('button');
+                b.className = "w-full py-3 px-4 bg-white/80 border-2 border-slate-100 rounded-xl font-bold text-left hover:border-blue-400 transition-all shadow-sm";
+                b.innerText = `${opt.label}) ${opt.option_text}`;
+                b.onclick = () => {
+                    userAnswers.push({question_id: q.id, selected_option_id: opt.id});
+                    currentQuizIdx++;
+                    showQuizQuestion();
+                };
+                oEl.appendChild(b);
+            });
+        }
+
+        async function submitQuizToAPI() {
+            const content = document.getElementById('quiz-content');
+            if (!authToken) {
+                content.innerHTML = `<div class='text-center py-4'><i class='fas fa-medal text-4xl text-yellow-500 mb-2'></i>
+                    <p class='font-black uppercase italic'>Quiz Tamamlandı!</p>
+                    <p class='text-sm text-slate-500 mt-2'>Sonuçlarınızı kaydetmek için giriş yapın.</p>
+                    <button onclick="showPage('login-page')" class='mt-3 bg-blue-600 text-white px-6 py-2 rounded-xl font-bold'>Giriş Yap</button></div>`;
+                return;
+            }
+            try {
+                const res = await fetch(API + '/api/quiz/submit', {
+                    method: 'POST', headers: apiHeaders(),
+                    body: JSON.stringify({quiz_id: quizData.id, answers: userAnswers})
+                });
+                const data = await res.json();
+                if (!res.ok) { content.innerHTML = `<p class='font-bold text-red-500'>${data.detail || 'Gönderim hatası'}</p>`; return; }
+                content.innerHTML = `<div class='text-center py-4'><i class='fas fa-trophy text-4xl text-yellow-500 mb-2'></i>
+                    <p class='font-black uppercase italic text-2xl text-emerald-600'>${data.score} Puan!</p>
+                    <p class='text-slate-600 font-bold'>${data.correct_count}/${data.total_questions} doğru</p>
+                    <p class='text-orange-500 font-bold mt-1'>🔥 Seri: ${data.new_streak} gün</p></div>`;
+            } catch(e) { content.innerHTML = `<p class='font-bold text-red-500'>Bağlantı hatası</p>`; }
+        }
+
+        // ── Symptom Analysis (API) ──
+        async function simulateAnalysis() {
+            const input = document.getElementById('complaint-input').value;
+            if (!input) return showModal('Boş Alan', 'Lütfen önce şikayetinizi yazın.', 'warning');
+            if (!authToken) return showModal('Giriş Gerekli', 'Semptom analizi için önce giriş yapmalısınız.', 'warning');
+            const symptomList = input.split(/[,،]+/).map(s => s.trim()).filter(s => s.length > 0);
+            try {
+                const res = await fetch(API + '/api/symptoms/analyze', {
+                    method: 'POST', headers: apiHeaders(),
+                    body: JSON.stringify({symptoms: symptomList})
+                });
+                const data = await res.json();
+                if (!res.ok) throw new Error(data.detail || 'Analiz başarısız');
+                const confMap = {'yüksek':'high','orta':'mid','düşük':'low'};
+                let html = '';
+                data.recommendations.forEach(r => {
+                    const cls = r.warning ? 'rec-card warning-card' : 'rec-card';
+                    html += `<div class="${cls}"><span class="rec-dept">${r.department}</span><span class="rec-conf ${confMap[r.confidence]||'mid'}">${r.confidence}</span><p style="margin:0.4rem 0 0;font-size:0.9rem;color:#475569">${r.description}</p>`;
+                    if (r.warning) html += `<p style="margin:0.4rem 0 0;font-size:0.85rem;color:#d97706;font-weight:800">${r.warning}</p>`;
+                    html += '</div>';
+                });
+                html += `<div class="modal-disclaimer">⚠️ ${data.disclaimer}</div>`;
+                showModal('Analiz Sonucu', html, 'medical');
+            } catch(e) { showModal('Analiz Hatası', e.message, 'error'); }
+        }
+
+        function startVoiceAssistant() {
+            const mascot = document.getElementById('mascot-trigger');
+            const textarea = document.getElementById('complaint-input');
+            mascot.classList.add('listening');
+            textarea.placeholder = "Pandi dinliyor... Lütfen konuşun.";
+            setTimeout(() => {
+                mascot.classList.remove('listening');
+                textarea.value = "Halsizlik, şiddetli baş ağrısı ve mide bulantısı şikayetim var.";
+                textarea.placeholder = "Şikayetinizi buraya yazın...";
+            }, 3000);
+        }
+
+        // ── Init ──
+        window.onload = () => { updateNavForAuth(); loadDailyQuiz(); };
+    </script>
+    
+</body>
+</html>
