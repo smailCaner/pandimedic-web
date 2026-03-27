@@ -12,6 +12,8 @@ Kullanım:
 
 from abc import ABC, abstractmethod
 from dataclasses import dataclass
+import joblib
+import os
 
 
 # ─── Veri Modelleri ────────────────────────────────────────────────────────────
@@ -279,24 +281,76 @@ class MockSymptomAnalyzer(BaseSymptomAnalyzer):
 
 class MLSymptomAnalyzer(BaseSymptomAnalyzer):
     """
-    Placeholder: İleride gerçek tıbbi veri seti ve ML modeli ile
-    doldurulacak semptom analiz motoru.
-
-    Kullanım:
-        analyzer = MLSymptomAnalyzer(model_path="models/symptom_model.pkl")
-        result = analyzer.analyze(["ateş", "öksürük"])
+    Gerçek tıbbi veri seti (TF-IDF + Naive Bayes) ile eğitilmiş
+    Makine Öğrenmesi destekli semptom analiz motoru.
     """
 
+    DEPT_INFO = {
+        "Dahiliye": "Girdiğiniz belirtiler doğrultusunda iç hastalıkları (Dahiliye) polikliniğine görünmeniz önerilir.",
+        "Nöroloji": "Baş, sinir sistemi veya uyuşma gibi nörolojik belirtiler saptandı.",
+        "Kardiyoloji": "Kalp, çarpıntı veya göğüs ağrısı ile ilgili kardiyolojik değerlendirme önerilir.",
+        "Kulak Burun Boğaz (KBB)": "Kulak, burun veya boğaz yolları ile ilgili şikayetler saptandı.",
+        "Göz Hastalıkları": "Görme ve göz sağlığı problemleri saptandı.",
+        "Cildiye (Dermatoloji)": "Cilt, deri veya saç ile ilgili dermatolojik şikayetler saptandı.",
+        "Göğüs Hastalıkları": "Solunum yolu veya nefes darlığı ile ilgili göğüs hastalıkları polikliniği önerilir.",
+    }
+
     def __init__(self, model_path: str | None = None):
-        self.model_path = model_path
-        # İleride: self.model = load_model(model_path)
+        if model_path is None:
+            base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+            self.model_path = os.path.join(base_dir, "ml", "symptom_model.pkl")
+        else:
+            self.model_path = model_path
+            
+        self.model = None
+        if os.path.exists(self.model_path):
+            self.model = joblib.load(self.model_path)
 
     def analyze(self, symptoms: list[str]) -> AnalysisResult:
-        # İleride bu fonksiyon ML modeli ile dolduracak
-        raise NotImplementedError(
-            "ML tabanlı semptom analizi henüz implement edilmedi. "
-            "Lütfen MockSymptomAnalyzer kullanın."
-        )
+        if not symptoms or not self.model:
+            # Fallback
+            return MockSymptomAnalyzer().analyze(symptoms)
+
+        # Cümleleri birleştir (örn: "başım ağrıyor, ateşim var")
+        text = " ".join(symptoms).lower()
+
+        try:
+            # Tahmin oranlarını al
+            probs = self.model.predict_proba([text])[0]
+            classes = self.model.classes_
+
+            # Skorlara göre sırala
+            scored_classes = sorted(zip(classes, probs), key=lambda x: x[1], reverse=True)
+            
+            recommendations = []
+            for dept, prob in scored_classes[:2]:  # En olası 2 poliklinik
+                if prob < 0.15 and len(recommendations) > 0:
+                    break  # Çok düşük olasılıklıları gösterme
+                
+                confidence = "yüksek" if prob > 0.6 else "orta" if prob > 0.3 else "düşük"
+                
+                # Özel acil durum kelimesi kontrolü
+                warning = None
+                if any(w in text for w in ["nefes alamıyorum", "göğsümde öküz", "kalbime bıçak", "kan boşaldı"]):
+                    warning = "🚨 Belirtileriniz acil bir duruma işaret ediyor olabilir. Lütfen en yakın acil servise başvurun."
+                    confidence = "yüksek"
+
+                desc = self.DEPT_INFO.get(dept, f"{dept} polikliniğine başvurmanız önerilir.")
+                
+                recommendations.append(PolyclinicResult(
+                    department=dept,
+                    confidence=confidence,
+                    description=desc,
+                    enabiz_url=ENABIZ_BASE_URL,
+                    warning=warning
+                ))
+            
+            return AnalysisResult(
+                input_symptoms=symptoms,
+                recommendations=recommendations or MockSymptomAnalyzer().analyze(symptoms).recommendations
+            )
+        except Exception as e:
+            return MockSymptomAnalyzer().analyze(symptoms)
 
 
 # ─── Factory Function ─────────────────────────────────────────────────────────
@@ -311,5 +365,5 @@ def get_symptom_analyzer() -> BaseSymptomAnalyzer:
     """
     global _analyzer_instance
     if _analyzer_instance is None:
-        _analyzer_instance = MockSymptomAnalyzer()
+        _analyzer_instance = MLSymptomAnalyzer()
     return _analyzer_instance
