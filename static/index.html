@@ -474,6 +474,13 @@
                 updateNavForAuth();
                 showModal('Hoş Geldin! 🎉', 'Başarıyla giriş yaptın. Pandimedic seni bekliyor!', 'success');
                 showPage('home-page');
+                
+                // Quiz çözülmüş ama gönderilmemişse otomatik gönder
+                if (quizData && currentQuizIdx >= quizData.questions.length) {
+                    submitQuizToAPI();
+                } else if (!quizData) {
+                    loadDailyQuiz();
+                }
             } catch(e) { showModal('Giriş Hatası', e.message, 'error'); }
         }
 
@@ -496,6 +503,13 @@
                 updateNavForAuth();
                 showModal('Hesap Oluşturuldu! 🎉', 'Pandimedic ailesine hoş geldin!', 'success');
                 showPage('home-page');
+                
+                // Quiz çözülmüş ama gönderilmemişse otomatik gönder
+                if (quizData && currentQuizIdx >= quizData.questions.length) {
+                    submitQuizToAPI();
+                } else if (!quizData) {
+                    loadDailyQuiz();
+                }
             } catch(e) { showModal('Kayıt Hatası', e.message, 'error'); }
         }
 
