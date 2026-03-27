@@ -530,8 +530,22 @@
 
         function apiHeaders() {
             const h = {'Content-Type': 'application/json'};
-            if (authToken) h['Authorization'] = 'Bearer ' + authToken;
+            if (authToken && authToken !== 'undefined' && authToken !== 'null') h['Authorization'] = 'Bearer ' + authToken;
             return h;
+        }
+
+        // ── UI Utils ──
+        function toggleBtnLoading(btn, isLoading, oText) {
+            if (!btn) return;
+            if (isLoading) {
+                btn.disabled = true;
+                btn.classList.add('opacity-70', 'cursor-not-allowed');
+                btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i> İşleniyor...';
+            } else {
+                btn.disabled = false;
+                btn.classList.remove('opacity-70', 'cursor-not-allowed');
+                btn.innerHTML = oText;
+            }
         }
 
         // ── Auth ──
@@ -551,6 +565,11 @@
             const email = inputs[0].value;
             const password = inputs[1].value;
             if (!email || !password) return showModal('Eksik Bilgi', 'Lütfen tüm alanları doldurun.', 'warning');
+            
+            const btn = document.querySelector('#login-page button.bg-blue-600');
+            const oText = btn.innerHTML;
+            toggleBtnLoading(btn, true, oText);
+            
             try {
                 const res = await fetch(API + '/api/auth/login', {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -570,7 +589,8 @@
                 } else if (!quizData) {
                     loadDailyQuiz();
                 }
-            } catch(e) { showModal('Giriş Hatası', e.message, 'error'); }
+            } catch(e) { showModal('Giriş Hatası', e.message, 'error'); } 
+            finally { toggleBtnLoading(btn, false, oText); }
         }
 
         async function handleRegister() {
@@ -580,6 +600,11 @@
             const password2 = inputs[3].value;
             if (password !== password2) return showModal('Şifre Hatası', 'Girdiğin şifreler birbiriyle eşleşmiyor.', 'warning');
             if (!email || !password) return showModal('Eksik Bilgi', 'E-posta ve şifre alanları gereklidir.', 'warning');
+            
+            const btn = document.querySelector('#register-page button.bg-emerald-500');
+            const oText = btn.innerHTML;
+            toggleBtnLoading(btn, true, oText);
+            
             try {
                 const res = await fetch(API + '/api/auth/register', {
                     method: 'POST', headers: {'Content-Type': 'application/json'},
@@ -600,6 +625,7 @@
                     loadDailyQuiz();
                 }
             } catch(e) { showModal('Kayıt Hatası', e.message, 'error'); }
+            finally { toggleBtnLoading(btn, false, oText); }
         }
 
         function showProfile() {
@@ -729,6 +755,11 @@
             const input = document.getElementById('complaint-input').value;
             if (!input) return showModal('Boş Alan', 'Lütfen önce şikayetinizi yazın.', 'warning');
             if (!authToken) return showModal('Giriş Gerekli', 'Semptom analizi için önce giriş yapmalısınız.', 'warning');
+            
+            const btn = document.querySelector('button[onclick="simulateAnalysis()"]');
+            const oText = btn.innerHTML;
+            toggleBtnLoading(btn, true, oText);
+            
             const symptomList = input.split(/[,،]+/).map(s => s.trim()).filter(s => s.length > 0);
             try {
                 const res = await fetch(API + '/api/symptoms/analyze', {
@@ -748,6 +779,7 @@
                 html += `<div class="modal-disclaimer">⚠️ ${data.disclaimer}</div>`;
                 showModal('Analiz Sonucu', html, 'medical');
             } catch(e) { showModal('Analiz Hatası', e.message, 'error'); }
+            finally { toggleBtnLoading(btn, false, oText); }
         }
 
         function startVoiceAssistant() {
