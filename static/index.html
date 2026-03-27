@@ -153,6 +153,11 @@
         .modal-close-btn.primary { background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; box-shadow: 0 4px 15px rgba(59,130,246,0.3); }
         .modal-close-btn.primary:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(59,130,246,0.4); }
         .modal-disclaimer { margin-top: 0.8rem; padding: 0.8rem; background: #fefce8; border-radius: 0.8rem; font-size: 0.8rem; color: #92400e; text-align: left; font-weight: 700; }
+        
+        .custom-scrollbar::-webkit-scrollbar { width: 6px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 10px; }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
     </style>
 </head>
 <body>
@@ -203,6 +208,9 @@
             <a href="javascript:void(0)" onclick="showPage('saglik-page')" class="text-2xl font-bold text-slate-800 hover:text-blue-600 flex items-center gap-4 transition">
                 <i class="fas fa-heart-pulse text-emerald-600 w-8"></i> Sağlıklı Yaşam
             </a>
+            <a href="javascript:void(0)" onclick="showPage('pandi-ogren-page')" class="text-2xl font-bold text-slate-800 hover:text-blue-600 flex items-center gap-4 transition">
+                <i class="fas fa-graduation-cap text-violet-500 w-8"></i> Pandi ile Öğren
+            </a>
         </div>
     </div>
 
@@ -246,7 +254,7 @@
             </div>
         </div>
 
-        <div class="grid grid-cols-1 md:grid-cols-3 gap-8 mb-20">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-20">
             <div class="nav-card border-b-8 border-red-500" onclick="showPage('ilkyardim-page')">
                 <div class="w-14 h-14 bg-red-50 text-red-500 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-inner"><i class="fas fa-kit-medical"></i></div>
                 <h3 class="text-2xl font-black text-slate-800 uppercase mb-2">İlk Yardım</h3>
@@ -261,6 +269,11 @@
                 <div class="w-14 h-14 bg-emerald-50 text-emerald-600 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-inner"><i class="fas fa-heart-pulse"></i></div>
                 <h3 class="text-2xl font-black text-slate-800 uppercase mb-2">Sağlıklı Yaşam</h3>
                 <p class="text-slate-500 font-medium leading-relaxed">Dengeli beslenme ve aktif yaşam tavsiyeleri.</p>
+            </div>
+            <div class="nav-card border-b-8 border-violet-500" onclick="showPage('pandi-ogren-page')">
+                <div class="w-14 h-14 bg-violet-50 text-violet-600 rounded-2xl flex items-center justify-center text-2xl mb-6 shadow-inner"><i class="fas fa-graduation-cap"></i></div>
+                <h3 class="text-2xl font-black text-slate-800 uppercase mb-2">Pandi ile Öğren</h3>
+                <p class="text-slate-500 font-medium leading-relaxed">Yanlış bilinen sağlık efsaneleri ve gerçekler.</p>
             </div>
         </div>
     </main>
@@ -394,6 +407,78 @@
             <i class="fas fa-person-running text-emerald-400 text-5xl mb-6"></i>
             <h3 class="text-2xl font-black mb-4 uppercase">Aktif Yaşam</h3>
             <p class="text-slate-600 font-bold italic">Haftada en az 150 dakika orta tempolu yürüyüş yapmak, kalp sağlığını korur ve mutluluk hormonu salgılanmasını tetikler.</p>
+        </div>
+    </div>
+</section>
+
+<section id="pandi-ogren-page" class="page-section container mx-auto px-6 py-10 relative z-10 text-left">
+    <button onclick="showPage('home-page')" class="mb-8 text-blue-600 font-bold flex items-center gap-2 hover:gap-4 transition-all">
+        <i class="fas fa-arrow-left"></i> ANA SAYFAYA DÖN
+    </button>
+    <h2 class="text-4xl font-black text-slate-900 mb-10 uppercase italic">Pandi İle <span class="text-violet-500">Vücudunu Tanı</span></h2>
+    
+    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div class="card-style p-8 rounded-3xl border-l-8 border-violet-400 group hover:bg-violet-50 transition-colors">
+            <h3 class="text-2xl font-black text-slate-800 mb-2 uppercase">Plasebo'nun İkizi</h3>
+            <div class="inline-block bg-violet-100 text-violet-700 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">Terim: Noksebo (Nocebo)</div>
+            <p class="text-slate-600 font-medium text-sm mb-4">Bir ilacın veya tedavinin yan etkilerini okuduğun için, aslında sende olmasa bile o olumsuzlukları psikolojik olarak yaşamaya başlaman. Zihnin vücuduna oynadığı "negatif" bir oyundur.</p>
+            <div class="bg-white/80 p-3 rounded-xl shadow-sm border border-violet-100"><p class="text-xs text-violet-700 font-bold italic line-clamp-3">💡 PandiTip: İnternetteki korkutucu kullanıcı yorumlarına dalıp kendini hasta etme. PandiMedic’in kanıta dayalı verileriyle sadece gerçeğe odaklan.</p></div>
+        </div>
+
+        <div class="card-style p-8 rounded-3xl border-l-8 border-emerald-400 group hover:bg-emerald-50 transition-colors">
+            <h3 class="text-2xl font-black text-slate-800 mb-2 uppercase">Takıntı Sınırı</h3>
+            <div class="inline-block bg-emerald-100 text-emerald-700 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">Terim: Ortoreksiya Nervoza</div>
+            <p class="text-slate-600 font-medium text-sm mb-4">"Sağlıklı beslenme" fikrini bir takıntı haline getirip, en ufak bir "zararlı" madde ihtimaline karşı yemek yemeyi reddetme durumu.</p>
+            <div class="bg-white/80 p-3 rounded-xl shadow-sm border border-emerald-100"><p class="text-xs text-emerald-700 font-bold italic line-clamp-3">💡 PandiTip: Sağlıklı yaşam bir hapishane değil, dengedir. Seçimlerinde "mükemmel" olanı değil, "sana iyi gelen" gerçekleri keşfet.</p></div>
+        </div>
+
+        <div class="card-style p-8 rounded-3xl border-l-8 border-blue-400 group hover:bg-blue-50 transition-colors">
+            <h3 class="text-2xl font-black text-slate-800 mb-2 uppercase">Bilgi Obezitesi</h3>
+            <div class="inline-block bg-blue-100 text-blue-700 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">Terim: İnfoloji (Info Overload)</div>
+            <p class="text-slate-600 font-medium text-sm mb-4">Bir semptomu araştırırken binlerce çelişkili bilgi yüzünden beyninin "donması" ve karar veremez hale gelmesi. Bilgi çokluğunun yarattığı felç.</p>
+            <div class="bg-white/80 p-3 rounded-xl shadow-sm border border-blue-100"><p class="text-xs text-blue-700 font-bold italic line-clamp-3">💡 PandiTip: Daha fazla bilgi her zaman daha iyi çözüm demek değildir. PandiMedic karmaşayı sadeleştirir.</p></div>
+        </div>
+
+        <div class="card-style p-8 rounded-3xl border-l-8 border-orange-400 group hover:bg-orange-50 transition-colors">
+            <h3 class="text-2xl font-black text-slate-800 mb-2 uppercase">Dijital Kaygı</h3>
+            <div class="inline-block bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">Terim: Nomofobi</div>
+            <p class="text-slate-600 font-medium text-sm mb-4">Cep telefonundan uzak kalma korkusu. Modern çağın yarattığı bu bağımlılık, vücutta tehlike anındaki gibi stres hormonu salgılanmasına neden olur.</p>
+            <div class="bg-white/80 p-3 rounded-xl shadow-sm border border-orange-100"><p class="text-xs text-orange-700 font-bold italic line-clamp-3">💡 PandiTip: Ara sıra çevrimdışı olmak en iyi tedavidir. Bildirimlerini kontrol etmeyi deneyebilirsin.</p></div>
+        </div>
+
+        <div class="card-style p-8 rounded-3xl border-l-8 border-red-400 group hover:bg-red-50 transition-colors">
+            <h3 class="text-2xl font-black text-slate-800 mb-2 uppercase">Dr. Google</h3>
+            <div class="inline-block bg-red-100 text-red-700 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">Terim: Terapötik İllüzyon</div>
+            <p class="text-slate-600 font-medium text-sm mb-4">Bir tedavinin bilimsel bir karşılığı olmamasına rağmen, sırf internette çok paylaşıldığı için "kesin işe yarayacak" diye düşünmek.</p>
+            <div class="bg-white/80 p-3 rounded-xl shadow-sm border border-red-100"><p class="text-xs text-red-700 font-bold italic line-clamp-3">💡 PandiTip: Popüler olan her zaman doğru değildir. Tıp literatürünün kabul ettiği gerçekleri cebinde taşı.</p></div>
+        </div>
+
+        <div class="card-style p-8 rounded-3xl border-l-8 border-teal-400 group hover:bg-teal-50 transition-colors">
+            <h3 class="text-2xl font-black text-slate-800 mb-2 uppercase">Doğrulama Tuzağı</h3>
+            <div class="inline-block bg-teal-100 text-teal-700 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">Terim: Onay Yanlılığı</div>
+            <p class="text-slate-600 font-medium text-sm mb-4">Hafif bir ağrın varken “ağrı nedenleri” yerine doğrudan “kötü hastalık belirtileri” aratıp sadece korkutucu sonuçlara odaklanmandır.</p>
+            <div class="bg-white/80 p-3 rounded-xl shadow-sm border border-teal-100"><p class="text-xs text-teal-700 font-bold italic line-clamp-3">💡 PandiTip: Beynin korktuğu şeyi bulmaya programlıdır. Tarafsız ve bilimsel verilere bakarak çıkabilirsin.</p></div>
+        </div>
+
+        <div class="card-style p-8 rounded-3xl border-l-8 border-rose-400 group hover:bg-rose-50 transition-colors">
+            <h3 class="text-2xl font-black text-slate-800 mb-2 uppercase">Zihnin Şakası</h3>
+            <div class="inline-block bg-rose-100 text-rose-700 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">Terim: Somatizasyon</div>
+            <p class="text-slate-600 font-medium text-sm mb-4">Zihinsel bir stresin veya kaygının, vücutta gerçek bir fiziksel ağrı olarak ortaya çıkması. İnternette haber okuyup karın ağrısı çekmek gibi.</p>
+            <div class="bg-white/80 p-3 rounded-xl shadow-sm border border-rose-100"><p class="text-xs text-rose-700 font-bold italic line-clamp-3">💡 PandiTip: Her belirti hastalık değildir. Bazen vücudun sadece dinlenip sakinleşmek istiyordur.</p></div>
+        </div>
+
+        <div class="card-style p-8 rounded-3xl border-l-8 border-cyan-400 group hover:bg-cyan-50 transition-colors">
+            <h3 class="text-2xl font-black text-slate-800 mb-2 uppercase">Barnum Etkisi</h3>
+            <div class="inline-block bg-cyan-100 text-cyan-700 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">Terim: Barnum Etkisi</div>
+            <p class="text-slate-600 font-medium text-sm mb-4">Çok genel ve herkese uyabilecek sağlık belirtilerini sanki “sadece sana özel” ve “çok ciddi” algılama hali.</p>
+            <div class="bg-white/80 p-3 rounded-xl shadow-sm border border-cyan-100"><p class="text-xs text-cyan-700 font-bold italic line-clamp-3">💡 PandiTip: Belirtiler geneldir ama senin vücudun özeldir. Genel internet uarılarına takılıp kalma.</p></div>
+        </div>
+
+        <div class="card-style p-8 rounded-3xl border-l-8 border-fuchsia-400 group hover:bg-fuchsia-50 transition-colors md:col-span-2 lg:col-span-1">
+            <h3 class="text-2xl font-black text-slate-800 mb-2 uppercase">Dunning-Kruger</h3>
+            <div class="inline-block bg-fuchsia-100 text-fuchsia-700 text-xs font-bold px-3 py-1 rounded-full mb-3 uppercase tracking-wider">Terim: Sağlıkta Kruger</div>
+            <p class="text-slate-600 font-medium text-sm mb-4">Çok az bilgi sahibi olan kişinin, bir makale okuyup kendi kendine uzman doktorculuk oynayarak yanlış kararlar vermesidir.</p>
+            <div class="bg-white/80 p-3 rounded-xl shadow-sm border border-fuchsia-100"><p class="text-xs text-fuchsia-700 font-bold italic line-clamp-3">💡 PandiTip: Gerçek bilgi mütevazıdır. Yanlış çıkarımlara bel bağlamaktan kaçınmalısın.</p></div>
         </div>
     </div>
 </section>
@@ -595,10 +680,47 @@
                 });
                 const data = await res.json();
                 if (!res.ok) { content.innerHTML = `<p class='font-bold text-red-500'>${data.detail || 'Gönderim hatası'}</p>`; return; }
-                content.innerHTML = `<div class='text-center py-4'><i class='fas fa-trophy text-4xl text-yellow-500 mb-2'></i>
+                
+                let resultHTML = `<div class='text-center py-4 mb-4'><i class='fas fa-trophy text-4xl text-yellow-500 mb-2'></i>
                     <p class='font-black uppercase italic text-2xl text-emerald-600'>${data.score} Puan!</p>
                     <p class='text-slate-600 font-bold'>${data.correct_count}/${data.total_questions} doğru</p>
-                    <p class='text-orange-500 font-bold mt-1'>🔥 Seri: ${data.new_streak} gün</p></div>`;
+                    <p class='text-orange-500 font-bold mt-1 mb-4'>🔥 Seri: ${data.new_streak} gün</p>
+                    <div class="h-px bg-slate-200 w-full my-4"></div>
+                    <div class="text-left space-y-4 max-h-72 overflow-y-auto pr-2 custom-scrollbar">`;
+
+                data.questions.forEach((q, idx) => {
+                    let userAnswerObj = userAnswers.find(ua => ua.question_id === q.id);
+                    let selectedId = userAnswerObj ? userAnswerObj.selected_option_id : null;
+                    
+                    resultHTML += `<div class="p-4 bg-slate-50/80 rounded-2xl border border-slate-100 text-sm">
+                        <p class="font-black text-slate-800 mb-3 text-base">${idx+1}. ${q.question_text}</p>
+                        <div class="space-y-2">`;
+                        
+                    q.options.forEach(opt => {
+                        let isSelected = (opt.id === selectedId);
+                        let isCorrect = opt.is_correct;
+                        let icon = '<i class="far fa-circle text-slate-300 w-5"></i>';
+                        let style = 'text-slate-500 bg-white border border-slate-100';
+                        
+                        if (isCorrect) { 
+                            style = 'text-emerald-700 font-bold bg-emerald-50 border-emerald-200'; 
+                            icon = '<i class="fas fa-check-circle text-emerald-500 w-5"></i>'; 
+                        }
+                        else if (isSelected && !isCorrect) { 
+                            style = 'text-red-700 font-bold bg-red-50 border-red-200 opacity-80'; 
+                            icon = '<i class="fas fa-times-circle text-red-500 w-5"></i>'; 
+                        } else if (isSelected) {
+                            icon = '<i class="fas fa-check-circle text-emerald-500 w-5"></i>'; 
+                        }
+                        
+                        resultHTML += `<div class="${style} p-3 rounded-xl flex items-center gap-3 transition-all"><div class="flex-shrink-0">${icon}</div><span class="flex-1">${opt.label}) ${opt.option_text}</span></div>`;
+                    });
+                    
+                    resultHTML += `</div><div class="mt-4 p-3 bg-blue-50/50 border border-blue-100 rounded-xl flex items-start gap-3"><i class="fas fa-lightbulb text-blue-500 mt-1"></i><p class="text-xs text-blue-800 font-bold italic leading-relaxed">${q.explanation}</p></div></div>`;
+                });
+                
+                resultHTML += `</div></div>`;
+                content.innerHTML = resultHTML;
             } catch(e) { content.innerHTML = `<p class='font-bold text-red-500'>Bağlantı hatası</p>`; }
         }
 
