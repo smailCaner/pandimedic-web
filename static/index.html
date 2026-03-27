@@ -520,7 +520,10 @@
         function showProfile() {
             if (!authToken) return showPage('login-page');
             fetch(API + '/api/auth/me', {headers: apiHeaders()})
-                .then(r => r.json())
+                .then(r => {
+                    if (!r.ok) throw new Error('Unauthenticated');
+                    return r.json();
+                })
                 .then(u => {
                     const html = `
                         <div style="text-align:left">
